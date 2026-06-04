@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply transition-colors duration-300;
+  }
+}
+
+@layer components {
+  /* Ultra-Premium Glassmorphism Class */
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-md border border-white/20 shadow-glass rounded-2xl;
+  }
+  
+  .glass-card-dark {
+    @apply bg-slate-900/80 backdrop-blur-md border border-slate-800 shadow-xl rounded-2xl;
+  }
+
+  /* Elegant Interactive Button Glimmer */
+  .btn-primary {
+    @apply relative overflow-hidden bg-brand-earth hover:bg-brand-earth/95 text-white font-medium py-3 px-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2;
+  }
+
+  .btn-secondary {
+    @apply border-2 border-brand-earth/20 bg-white/50 hover:bg-brand-clay/30 text-brand-earth font-medium py-3 px-6 rounded-xl transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-2;
+  }
+}
+
+/* Beautiful Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-brand-cream;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-brand-emerald/30 rounded-full hover:bg-brand-emerald/50 transition-colors;
+}
+
+/* Leaflet Maps Override fixes */
+.leaflet-container {
+  font-family: inherit;
+  border-radius: 1rem;
+  z-index: 1;
+}
+
+.leaflet-bar {
+  border: none !important;
+  box-shadow: 0 8px 32px 0 rgba(6, 78, 59, 0.08) !important;
+}
+
+.leaflet-bar a {
+  background-color: rgba(255, 255, 255, 0.8) !important;
+  color: #064e3b !important;
+  border-bottom: 1px solid #f4ede1 !important;
+}
+
+.leaflet-bar a:hover {
+  background-color: #efe8d9 !important;
+}
