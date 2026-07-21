@@ -76,7 +76,7 @@ const Signup = () => {
         className="w-full max-w-xl bg-white border border-brand-sand shadow-premium p-8 rounded-3xl space-y-6"
       >
         <div className="text-center space-y-2">
-          <h2 className="font-display font-extrabold text-3xl text-brand-earth">Join KrishiSamadhan</h2>
+          <h2 className="font-display font-extrabold text-3xl text-brand-earth">Join AgroBridge</h2>
           <p className="text-gray-500 text-sm font-accent">Connect, rescue crops, and earn sustainability points</p>
         </div>
 

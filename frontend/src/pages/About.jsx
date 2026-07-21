@@ -36,7 +36,7 @@ const About = () => {
           <div className="bg-brand-clay/30 border border-brand-sand p-8 rounded-3xl space-y-4">
             <div className="flex items-center gap-3">
               <span className="text-3xl">💡</span>
-              <h4 className="font-display font-bold text-lg text-brand-earth">The KrishiSamadhan Solution</h4>
+              <h4 className="font-display font-bold text-lg text-brand-earth">The AgroBridge Solution</h4>
             </div>
             <p className="text-xs text-gray-500 leading-relaxed font-accent">
               Our platform operates as a secure, decentralized bridge. We integrate advanced Gemini Vision AI to grade visual produce flaws, advise fair discount structures, and matches farmers with restaurants, food manufacturers, animal care shelters, and compost sites.

@@ -30,7 +30,7 @@ app.use('/api/messages', messageRoutes);
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'KrishiSamadhan Backend API is active and healthy!',
+    message: 'AgroBridge Backend API is active and healthy!',
     timestamp: new Date().toISOString()
   });
 });
@@ -48,7 +48,7 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
   console.log(`===================================================`);
-  console.log(`KrishiSamadhan Server running on port ${PORT}`);
+  console.log(`AgroBridge Server running on port ${PORT}`);
   console.log(`API Base URL: http://localhost:${PORT}/api`);
   console.log(`===================================================`);
 });

@@ -28,7 +28,7 @@ async function gradeProduceWithAI(imageBuffer, mimeType, produceName, userDescri
     const imagePart = fileToGenerativePart(imageBuffer, mimeType);
     
     const prompt = `
-      You are an expert AI agricultural grading inspector for KrishiSamadhan.
+      You are an expert AI agricultural grading inspector for AgroBridge.
       Analyze this image of produce: "${produceName}".
       User description: "${userDescription}".
       

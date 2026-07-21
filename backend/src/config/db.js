@@ -28,8 +28,8 @@ const initialSchema = {
   users: [
     {
       id: "admin-123",
-      name: "KrishiSamadhan Admin",
-      email: "admin@krishisamadhan.com",
+      name: "AgroBridge Admin",
+      email: "admin@agrobridge.com",
       password: "$2a$10$rUjVj14X7LymE1LqjC3sDeL1t1B7256V9nI/o0.c2z6qXhGgN3uWy", // bcrypt for 'admin123'
       role: "admin",
       verified: true,

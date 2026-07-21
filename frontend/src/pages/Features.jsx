@@ -43,7 +43,7 @@ const Features = () => {
             Designed for Zero-Waste Logistics
           </h1>
           <p className="text-gray-600 max-w-2xl mx-auto text-base font-accent">
-            KrishiSamadhan integrates cutting-edge technology to turn carbon waste into community value.
+            AgroBridge integrates cutting-edge technology to turn carbon waste into community value.
           </p>
         </div>
 

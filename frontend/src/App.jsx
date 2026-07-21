@@ -150,13 +150,13 @@ function App() {
           <footer className="bg-brand-earth text-gray-300 py-10 border-t border-brand-sand/10 text-xs shrink-0">
             <div className="max-w-7xl mx-auto px-4 text-center space-y-3 font-accent">
               <p className="font-semibold text-white">
-                🌱 KrishiSamadhan — Building a Zero-Food-Waste Agriculture Economy.
+                🌱 AgroBridge — Building a Zero-Food-Waste Agriculture Economy.
               </p>
               <p className="text-gray-400">
                 AI grading algorithms matching imperfect crops to Hotels, Animal Care Shelters, and Composting Yards.
               </p>
               <p className="text-[10px] text-gray-500">
-                © 2026 KrishiSamadhan. Powered by Google Gemini. All rights reserved.
+                © 2026 AgroBridge. Powered by Google Gemini. All rights reserved.
               </p>
             </div>
           </footer>

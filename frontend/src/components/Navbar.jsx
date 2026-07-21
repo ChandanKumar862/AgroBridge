@@ -54,7 +54,7 @@ const Navbar = () => {
               </div>
               <div>
                 <span className="font-display font-extrabold text-2xl tracking-tight text-brand-earth block">
-                  KrishiSamadhan
+                  AgroBridge
                 </span>
                 <span className="text-[10px] tracking-wider text-brand-emerald font-accent font-bold uppercase block -mt-1">
                   Zero-Waste Agriculture

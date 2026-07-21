@@ -96,7 +96,7 @@ const Home = () => {
               className="text-gray-600 text-lg md:text-xl max-w-2xl mx-auto lg:mx-0 leading-relaxed font-accent"
             >
               Daily, tons of healthy produce is rejected solely for minor cosmetic reasons. 
-              KrishiSamadhan leverages Gemini AI to grade, match, and deliver Grade B/C yields to commercial buyers, animal care sanctuaries, and composting hubs.
+              AgroBridge leverages Gemini AI to grade, match, and deliver Grade B/C yields to commercial buyers, animal care sanctuaries, and composting hubs.
             </motion.p>
 
             {/* CTAs */}
@@ -268,7 +268,7 @@ const Home = () => {
               A Unified Ecosystem for Zero-Waste Agriculture
             </h2>
             <p className="text-gray-600 mt-4 text-base font-accent">
-              KrishiSamadhan operates a smart multipart matching engine connecting four unique ecosystem roles.
+              AgroBridge operates a smart multipart matching engine connecting four unique ecosystem roles.
             </p>
           </div>
 

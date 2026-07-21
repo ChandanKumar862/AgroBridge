@@ -12,7 +12,7 @@ if (!MONGODB_URI) {
 const DB_FILE = path.join(__dirname, '..', '..', 'data', 'db.json');
 
 async function migrate() {
-  console.log('Starting KrishiSamadhan Data Migration to MongoDB Atlas...');
+  console.log('Starting AgroBridge Data Migration to MongoDB Atlas...');
 
   if (!fs.existsSync(DB_FILE)) {
     console.error(`db.json file not found at: ${DB_FILE}`);
@@ -78,7 +78,7 @@ async function migrate() {
 
     console.log('\n===================================================');
     console.log('Migration Completed Successfully!');
-    console.log('KrishiSamadhan has been fully migrated to MongoDB Atlas!');
+    console.log('AgroBridge has been fully migrated to MongoDB Atlas!');
     console.log('=======================================================\n');
 
   } catch (error) {

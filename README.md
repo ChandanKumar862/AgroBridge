@@ -1,4 +1,4 @@
-# KrishiSamadhan 🌾
+# AgroBridge 🌾
 
 An AI-powered, sustainable agricultural marketplace that redirects imperfect Grade B/C and rotten produce from smallholder farms directly to commercial kitchens, animal sanctuaries, and organic compost yards. 
 
@@ -32,7 +32,7 @@ Farmers can press a single microphone button to speak crop parameters (e.g., *"T
 ## 📂 Project Structure
 
 ```
-krishisamadhan/
+agrobridge/
 ├── backend/
 │   ├── src/
 │   │   ├── config/          # Unified DB, Gemini AI, storage engines
@@ -91,4 +91,4 @@ For fast review and grading, we have integrated **One-Click Quick Login shortcut
 | **Commercial Buyer** | `buyer@krishi.com` | `buyer123` | Browse split-pane listings, click SVG Hex zones, execute Razorpay wallet purchases. |
 | **Animal Care** | `animal@krishi.com` | `animal123` | Pickup schedules for Grade C fodder, verify sanctuary collection logs. |
 | **Compost Yard** | `compost@krishi.com` | `compost123` | Log nitrogen-heavy crop rot collection routes, track organic volume charts. |
-| **Platform Admin** | `admin@krishisamadhan.com` | `admin123` | Moderator tables verifying/flagging crops, review fraud scans. |
+| **Platform Admin** | `admin@agrobridge.com` | `admin123` | Moderator tables verifying/flagging crops, review fraud scans. |

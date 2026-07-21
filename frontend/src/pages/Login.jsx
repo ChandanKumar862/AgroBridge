@@ -38,7 +38,7 @@ const Login = () => {
     { label: "🏨 Buyer", email: "buyer@krishi.com", pass: "buyer123" },
     { label: "🐄 Animal Care", email: "animal@krishi.com", pass: "animal123" },
     { label: "♻️ Compost", email: "compost@krishi.com", pass: "compost123" },
-    { label: "🧑‍💼 Admin", email: "admin@krishisamadhan.com", pass: "admin123" },
+    { label: "🧑‍💼 Admin", email: "admin@agrobridge.com", pass: "admin123" },
   ];
 
   return (
@@ -50,7 +50,7 @@ const Login = () => {
       >
         <div className="text-center space-y-2">
           <h2 className="font-display font-extrabold text-3xl text-brand-earth">Welcome Back</h2>
-          <p className="text-gray-500 text-sm font-accent">Access your KrishiSamadhan agricultural account</p>
+          <p className="text-gray-500 text-sm font-accent">Access your AgroBridge agricultural account</p>
         </div>
 
         {error && (

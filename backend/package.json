@@ -1,7 +1,7 @@
 {
-  "name": "krishisamadhan-backend",
+  "name": "agrobridge-backend",
   "version": "1.0.0",
-  "description": "Production-ready backend API for KrishiSamadhan agricultural marketplace",
+  "description": "Production-ready backend API for AgroBridge agricultural marketplace",
   "main": "src/app.js",
   "scripts": {
     "start": "node src/app.js",
