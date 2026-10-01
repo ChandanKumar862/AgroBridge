@@ -1,18 +1,22 @@
 const { MongoClient } = require('mongodb');
 
-// Ensure MONGODB_URI is set
-const MONGODB_URI = process.env.MONGODB_URI;
-if (!MONGODB_URI) {
-  console.error('MONGODB_URI is not set in environment variables!');
-  process.exit(1);
-}
-
-const client = new MongoClient(MONGODB_URI);
+let client = null;
 let db = null;
 
 async function connectDB() {
   if (db) return db;
+  
+  const MONGODB_URI = process.env.MONGODB_URI;
+  if (!MONGODB_URI) {
+    const errorMsg = 'MONGODB_URI is not set in environment variables!';
+    console.error(errorMsg);
+    throw new Error(errorMsg);
+  }
+
   try {
+    if (!client) {
+      client = new MongoClient(MONGODB_URI);
+    }
     await client.connect();
     db = client.db();
     console.log('Successfully connected to MongoDB Atlas cluster');

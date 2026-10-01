@@ -35,6 +35,13 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'AgroBridge Backend API Server is active!'
+  });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Unhandled Server Error:', err.stack);
@@ -46,11 +53,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`===================================================`);
-  console.log(`AgroBridge Server running on port ${PORT}`);
-  console.log(`API Base URL: http://localhost:${PORT}/api`);
-  console.log(`===================================================`);
-});
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    console.log(`===================================================`);
+    console.log(`AgroBridge Server running on port ${PORT}`);
+    console.log(`API Base URL: http://localhost:${PORT}/api`);
+    console.log(`===================================================`);
+  });
+}
 
 module.exports = app;
