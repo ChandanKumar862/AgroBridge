@@ -1,4 +1,11 @@
+const path = require('path');
+const dotenv = require('dotenv');
 const { MongoClient } = require('mongodb');
+
+// Ensure environment variables are loaded
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 let client = null;
 let db = null;
@@ -8,7 +15,7 @@ async function connectDB() {
   
   const MONGODB_URI = process.env.MONGODB_URI;
   if (!MONGODB_URI) {
-    const errorMsg = 'MONGODB_URI is not set in environment variables!';
+    const errorMsg = 'MONGODB_URI is not defined in environment variables (.env)! Please set MONGODB_URI in your .env file.';
     console.error(errorMsg);
     throw new Error(errorMsg);
   }
@@ -19,7 +26,10 @@ async function connectDB() {
     }
     await client.connect();
     db = client.db();
-    console.log('Successfully connected to MongoDB Atlas cluster');
+    if (!db.databaseName || db.databaseName === 'test') {
+      db = client.db('agrobridge');
+    }
+    console.log(`Successfully connected to MongoDB (${db.databaseName})`);
     return db;
   } catch (error) {
     console.error('Failed to connect to MongoDB:', error);
@@ -27,34 +37,12 @@ async function connectDB() {
   }
 }
 
-// Initial DB structure for self-initialization if empty
-const initialSchema = {
-  users: [
-    {
-      id: "admin-123",
-      name: "AgroBridge Admin",
-      email: "admin@agrobridge.com",
-      password: "$2a$10$rUjVj14X7LymE1LqjC3sDeL1t1B7256V9nI/o0.c2z6qXhGgN3uWy", // bcrypt for 'admin123'
-      role: "admin",
-      verified: true,
-      createdAt: new Date().toISOString()
-    }
-  ],
-  produce: [],
-  orders: [],
-  messages: [],
-  sustainability: {
-    totalWastePrevented: 14250, // in kg
-    co2Reduced: 27075, // in kg (1.9 kg CO2 per kg food saved)
-    waterSaved: 9975000, // in Litres (approx 700L per kg produce)
-    leaderboard: [
-      { id: "lead-1", name: "Ramesh Kumar", role: "farmer", score: 850, badge: "Eco Guardian" },
-      { id: "lead-2", name: "Green Earth Compost", role: "compost", score: 720, badge: "Soil Master" },
-      { id: "lead-3", name: "Vikas Patil", role: "farmer", score: 680, badge: "Waste Warrior" },
-      { id: "lead-4", name: "Taj Regency Hotel", role: "buyer", score: 610, badge: "Green Gastronomy" },
-      { id: "lead-5", name: "Happy Paws Sanctuary", role: "animal_care", score: 540, badge: "Animal Ally" }
-    ]
-  }
+// Default empty structure for sustainability metrics
+const defaultSustainability = {
+  totalWastePrevented: 0,
+  co2Reduced: 0,
+  waterSaved: 0,
+  leaderboard: []
 };
 
 class MongoDBDatabase {
@@ -64,22 +52,9 @@ class MongoDBDatabase {
 
   async init() {
     try {
-      const dbInstance = await connectDB();
-      
-      // Self-initialize if users or sustainability collection is empty
-      const usersCount = await dbInstance.collection('users').countDocuments();
-      if (usersCount === 0) {
-        console.log('Database is empty, initializing default users schema...');
-        await dbInstance.collection('users').insertMany(initialSchema.users);
-      }
-
-      const sustainabilityCount = await dbInstance.collection('sustainability').countDocuments();
-      if (sustainabilityCount === 0) {
-        console.log('Initializing default sustainability analytics schema...');
-        await dbInstance.collection('sustainability').insertOne(initialSchema.sustainability);
-      }
+      await connectDB();
     } catch (error) {
-      console.error('Error during database initialization:', error);
+      console.error('Error during database connection:', error);
     }
   }
 
@@ -133,7 +108,7 @@ class MongoDBDatabase {
     await this.initPromise;
     const dbInstance = await connectDB();
     const doc = await dbInstance.collection('sustainability').findOne({});
-    return doc || initialSchema.sustainability;
+    return doc || defaultSustainability;
   }
 
   async updateGlobalAnalytics(wasteAmount, isCompost = false) {
@@ -141,7 +116,7 @@ class MongoDBDatabase {
     const dbInstance = await connectDB();
     let doc = await dbInstance.collection('sustainability').findOne({});
     if (!doc) {
-      doc = { ...initialSchema.sustainability };
+      doc = { ...defaultSustainability };
       await dbInstance.collection('sustainability').insertOne(doc);
     }
 
@@ -171,7 +146,7 @@ class MongoDBDatabase {
     const dbInstance = await connectDB();
     let doc = await dbInstance.collection('sustainability').findOne({});
     if (!doc) {
-      doc = { ...initialSchema.sustainability };
+      doc = { ...defaultSustainability };
       await dbInstance.collection('sustainability').insertOne(doc);
     }
     if (!doc.leaderboard) doc.leaderboard = [];

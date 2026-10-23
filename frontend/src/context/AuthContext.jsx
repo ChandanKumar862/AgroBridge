@@ -96,8 +96,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const sendOTP = async (email) => {
+    try {
+      const res = await api.post('/auth/send-otp', { email });
+      return { 
+        success: true, 
+        message: res.data.message,
+        devOtp: res.data.devOtp 
+      };
+    } catch (err) {
+      return { 
+        success: false, 
+        message: err.response?.data?.message || 'Failed to send OTP code.' 
+      };
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, signup, logout, rechargeWallet, setUser }}>
+    <AuthContext.Provider value={{ user, token, loading, login, signup, sendOTP, logout, rechargeWallet, setUser }}>
       {children}
     </AuthContext.Provider>
   );

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion } from 'framer-motion';
-import { LogIn, Sparkles, Loader2 } from 'lucide-react';
+import { LogIn, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const { login } = useAuth();
@@ -26,20 +26,6 @@ const Login = () => {
       setError(result.message);
     }
   };
-
-  // Demo speed logs trigger
-  const quickLogin = (roleEmail, rolePass) => {
-    setEmail(roleEmail);
-    setPassword(rolePass);
-  };
-
-  const demoUsers = [
-    { label: "👨‍🌾 Farmer", email: "farmer@krishi.com", pass: "farmer123" },
-    { label: "🏨 Buyer", email: "buyer@krishi.com", pass: "buyer123" },
-    { label: "🐄 Animal Care", email: "animal@krishi.com", pass: "animal123" },
-    { label: "♻️ Compost", email: "compost@krishi.com", pass: "compost123" },
-    { label: "🧑‍💼 Admin", email: "admin@agrobridge.com", pass: "admin123" },
-  ];
 
   return (
     <div className="flex-grow flex items-center justify-center py-16 px-4 bg-brand-cream/30">
@@ -102,28 +88,6 @@ const Login = () => {
             )}
           </button>
         </form>
-
-        <hr className="border-brand-sand" />
-
-        {/* Developer One-Click Fast Credentials Panel */}
-        <div className="p-4 bg-brand-clay/30 border border-brand-sand/60 rounded-2xl space-y-3">
-          <div className="flex items-center gap-1.5 text-[10px] font-bold text-brand-earth uppercase tracking-widest font-accent">
-            <Sparkles className="w-3.5 h-3.5 text-brand-emerald animate-pulse" />
-            <span>Developer One-Click Credentials</span>
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            {demoUsers.map(u => (
-              <button 
-                key={u.email}
-                type="button"
-                onClick={() => quickLogin(u.email, u.pass)}
-                className="py-2 px-2 text-left bg-white border border-brand-sand/80 hover:bg-brand-clay/50 rounded-xl transition-all truncate text-brand-earth hover:scale-[1.01]"
-              >
-                {u.label}
-              </button>
-            ))}
-          </div>
-        </div>
 
         <p className="text-center text-xs text-gray-500 font-accent">
           Don't have an account? <Link to="/signup" className="font-bold text-brand-emerald hover:underline">Register now</Link>

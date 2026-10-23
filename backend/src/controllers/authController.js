@@ -1,6 +1,7 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const db = require('../config/db');
+const { sendOTPEmail } = require('../config/email');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'krishi-samadhan-super-secret-key-2026';
 const JWT_EXPIRES_IN = '30d';
@@ -14,10 +15,15 @@ const generateToken = (id) => {
 // @access  Public
 const registerUser = async (req, res) => {
   try {
-    const { name, email, password, role, location, organization, phone } = req.body;
+    const { name, email, password, role, location, organization, phone, otp } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ success: false, message: 'Please provide name, email, password, and role' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address (e.g. name@domain.com)' });
     }
 
     const validRoles = ['farmer', 'buyer', 'animal_care', 'compost', 'admin'];
@@ -25,10 +31,32 @@ const registerUser = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Invalid role specified' });
     }
 
+    const normalizedEmail = email.toLowerCase().trim();
+
     // Check if user exists
-    const userExists = await db.findOne('users', { email: email.toLowerCase() });
+    const userExists = await db.findOne('users', { email: normalizedEmail });
     if (userExists) {
-      return res.status(400).json({ success: false, message: 'User already exists with this email' });
+      return res.status(400).json({ success: false, message: 'An account with this email already exists' });
+    }
+
+    // Verify OTP if provided
+    if (otp) {
+      const storedOtp = await db.findOne('otps', { email: normalizedEmail });
+      if (!storedOtp) {
+        return res.status(400).json({ success: false, message: 'Verification code not found or expired. Please request a new code.' });
+      }
+
+      if (new Date(storedOtp.expiresAt) < new Date()) {
+        await db.deleteOne('otps', { email: normalizedEmail });
+        return res.status(400).json({ success: false, message: 'Verification code has expired. Please request a new code.' });
+      }
+
+      if (storedOtp.otp.toString().trim() !== otp.toString().trim()) {
+        return res.status(400).json({ success: false, message: 'Invalid verification code. Please check your email and try again.' });
+      }
+
+      // Consumed valid OTP
+      await db.deleteOne('otps', { email: normalizedEmail });
     }
 
     // Hash password
@@ -181,11 +209,102 @@ const resetPassword = async (req, res) => {
   res.status(200).json({ success: true, message: 'Password has been reset successfully' });
 };
 
+// @desc    Send 6-digit verification code to email
+// @route   POST /api/auth/send-otp
+// @access  Public
+const sendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Please provide an email address' });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid email address (e.g. name@domain.com)' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+
+    // Check if user already exists
+    const userExists = await db.findOne('users', { email: normalizedEmail });
+    if (userExists) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists. Please log in.' });
+    }
+
+    // Generate 6-digit numeric OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+
+    // Clear previous pending OTP for this email
+    await db.deleteOne('otps', { email: normalizedEmail });
+
+    // Store in otps collection
+    await db.insertOne('otps', {
+      email: normalizedEmail,
+      otp,
+      expiresAt: expiresAt.toISOString(),
+      createdAt: new Date().toISOString()
+    });
+
+    // Send email via nodemailer or simulation
+    await sendOTPEmail(normalizedEmail, otp);
+
+    res.status(200).json({
+      success: true,
+      message: `A 6-digit verification code has been sent to ${normalizedEmail}`
+    });
+  } catch (error) {
+    console.error('Error in sendOTP:', error);
+    res.status(500).json({ success: false, message: 'Failed to send verification code. Please try again.' });
+  }
+};
+
+// @desc    Verify OTP code
+// @route   POST /api/auth/verify-otp
+// @access  Public
+const verifyOTP = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ success: false, message: 'Please provide email and verification code' });
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const storedOtp = await db.findOne('otps', { email: normalizedEmail });
+
+    if (!storedOtp) {
+      return res.status(400).json({ success: false, message: 'Verification code not found or expired. Please request a new code.' });
+    }
+
+    if (new Date(storedOtp.expiresAt) < new Date()) {
+      await db.deleteOne('otps', { email: normalizedEmail });
+      return res.status(400).json({ success: false, message: 'Verification code has expired. Please request a new code.' });
+    }
+
+    if (storedOtp.otp.toString().trim() !== otp.toString().trim()) {
+      return res.status(400).json({ success: false, message: 'Invalid verification code. Please check and try again.' });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully!'
+    });
+  } catch (error) {
+    console.error('Error in verifyOTP:', error);
+    res.status(500).json({ success: false, message: 'Failed to verify code' });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   getMe,
   updateProfile,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  sendOTP,
+  verifyOTP
 };

@@ -1,18 +1,23 @@
-require('dotenv').config();
-const fs = require('fs');
 const path = require('path');
+const dotenv = require('dotenv');
+const fs = require('fs');
 const { MongoClient } = require('mongodb');
+
+// Ensure environment variables are loaded
+dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
 
 const MONGODB_URI = process.env.MONGODB_URI;
 if (!MONGODB_URI) {
-  console.error('MONGODB_URI is not set in environment variables!');
+  console.error('MONGODB_URI is not defined in environment variables (.env)! Please set MONGODB_URI in your .env file.');
   process.exit(1);
 }
 
 const DB_FILE = path.join(__dirname, '..', '..', 'data', 'db.json');
 
 async function migrate() {
-  console.log('Starting AgroBridge Data Migration to MongoDB Atlas...');
+  console.log('Starting AgroBridge Data Migration to MongoDB...');
 
   if (!fs.existsSync(DB_FILE)) {
     console.error(`db.json file not found at: ${DB_FILE}`);
