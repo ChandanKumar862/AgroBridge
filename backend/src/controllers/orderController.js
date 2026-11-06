@@ -129,31 +129,30 @@ const createOrder = async (req, res) => {
   }
 };
 
-// @desc    Get orders for active user session
+// @desc    Get orders for active user session with indexed DB query
 // @route   GET /api/orders
 // @access  Private
 const getOrders = async (req, res) => {
   try {
-    const orders = await db.getCollection('orders');
-    let filteredOrders = [];
-
+    const query = {};
     if (req.user.role === 'farmer') {
-      filteredOrders = orders.filter(o => o.farmerId === req.user.id);
-    } else if (req.user.role === 'admin') {
-      filteredOrders = orders; // Admin views all
-    } else {
-      filteredOrders = orders.filter(o => o.buyerId === req.user.id);
+      query.farmerId = req.user.id;
+    } else if (req.user.role !== 'admin') {
+      query.buyerId = req.user.id;
     }
 
-    // Sort by newest orders
-    filteredOrders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    // Leveraging compound index on buyerId/farmerId + createdAt
+    const orders = await db.find('orders', query, {
+      sort: { createdAt: -1 }
+    });
 
     res.status(200).json({
       success: true,
-      count: filteredOrders.length,
-      data: filteredOrders
+      count: orders.length,
+      data: orders
     });
   } catch (error) {
+    console.error('Fetch orders error:', error);
     res.status(500).json({ success: false, message: 'Server error fetching orders' });
   }
 };

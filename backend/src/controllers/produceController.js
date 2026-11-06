@@ -44,6 +44,12 @@ const createProduce = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Please provide name, quantity, price, harvest date, and location' });
     }
 
+    const parsedQty = parseFloat(quantity);
+    const parsedPrice = parseFloat(expectedPrice);
+    if (isNaN(parsedQty) || parsedQty <= 0 || isNaN(parsedPrice) || parsedPrice <= 0) {
+      return res.status(400).json({ success: false, message: 'Quantity and price must be valid positive numbers greater than 0' });
+    }
+
     let locationObj = location;
     if (typeof location === 'string') {
       try {
@@ -134,62 +140,70 @@ const createProduce = async (req, res) => {
   }
 };
 
-// @desc    Get all active produce listings
+// @desc    Get all active produce listings with server-side filtering, indexing & pagination
 // @route   GET /api/produce
 // @access  Public
 const getListings = async (req, res) => {
   try {
-    const { grade, hexZone, search, minQuantity, maxPrice, sortBy } = req.query;
-    let listings = await db.getCollection('produce');
+    const { grade, hexZone, search, minQuantity, maxPrice, sortBy, page, limit } = req.query;
 
-    // Filter available ones only
-    listings = listings.filter(item => item.status === 'Available');
+    const query = { status: 'Available' };
 
-    // Filter by grade
     if (grade) {
-      listings = listings.filter(item => item.aiGrading.grade === grade);
+      query['aiGrading.grade'] = grade;
     }
 
-    // Filter by Zone
     if (hexZone) {
-      listings = listings.filter(item => item.hexZone === hexZone);
+      query.hexZone = hexZone;
     }
 
-    // Filter by name search
     if (search) {
-      const q = search.toLowerCase();
-      listings = listings.filter(item => item.name.toLowerCase().includes(q) || item.farmerName.toLowerCase().includes(q));
+      const q = search.trim();
+      query.$or = [
+        { name: { $regex: q, $options: 'i' } },
+        { farmerName: { $regex: q, $options: 'i' } }
+      ];
     }
 
-    // Filter by min quantity
     if (minQuantity) {
-      listings = listings.filter(item => item.quantity >= parseFloat(minQuantity));
+      const parsedMin = parseFloat(minQuantity);
+      if (!isNaN(parsedMin)) query.quantity = { $gte: parsedMin };
     }
 
-    // Filter by max price
     if (maxPrice) {
-      listings = listings.filter(item => item.discountedPrice <= parseFloat(maxPrice));
+      const parsedMax = parseFloat(maxPrice);
+      if (!isNaN(parsedMax)) query.discountedPrice = { $lte: parsedMax };
     }
 
-    // Sorting options
+    // Server-side database sort mapping
+    let sortObj = { createdAt: -1 };
     if (sortBy === 'urgency') {
-      // Prioritize oldest/highest urgency score
-      listings.sort((a, b) => b.urgencyScore - a.urgencyScore);
+      sortObj = { urgencyScore: -1, createdAt: -1 };
     } else if (sortBy === 'price_low') {
-      listings.sort((a, b) => a.discountedPrice - b.discountedPrice);
+      sortObj = { discountedPrice: 1 };
     } else if (sortBy === 'quantity_high') {
-      listings.sort((a, b) => b.quantity - a.quantity);
-    } else {
-      // Default: newest listed first
-      listings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      sortObj = { quantity: -1 };
     }
+
+    const pageNum = parseInt(page, 10) || 1;
+    const limitNum = parseInt(limit, 10) || 50;
+
+    const { docs, total, totalPages } = await db.findPaged('produce', query, {
+      page: pageNum,
+      limit: limitNum,
+      sort: sortObj
+    });
 
     res.status(200).json({
       success: true,
-      count: listings.length,
-      data: listings
+      count: docs.length,
+      total,
+      page: pageNum,
+      totalPages,
+      data: docs
     });
   } catch (error) {
+    console.error('Fetch listings error:', error);
     res.status(500).json({ success: false, message: 'Server error fetching listings' });
   }
 };

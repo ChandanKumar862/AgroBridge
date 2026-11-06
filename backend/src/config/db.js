@@ -52,9 +52,29 @@ class MongoDBDatabase {
 
   async init() {
     try {
-      await connectDB();
+      const dbInstance = await connectDB();
+      await this.initIndexes(dbInstance);
     } catch (error) {
       console.error('Error during database connection:', error);
+    }
+  }
+
+  // Automated Index Initializer for High-Performance Queries
+  async initIndexes(dbInstance) {
+    try {
+      await Promise.allSettled([
+        dbInstance.collection('produce').createIndex({ status: 1, createdAt: -1 }),
+        dbInstance.collection('produce').createIndex({ hexZone: 1, 'aiGrading.grade': 1, status: 1 }),
+        dbInstance.collection('produce').createIndex({ farmerId: 1, status: 1 }),
+        dbInstance.collection('produce').createIndex({ urgencyScore: -1 }),
+        dbInstance.collection('orders').createIndex({ buyerId: 1, createdAt: -1 }),
+        dbInstance.collection('orders').createIndex({ farmerId: 1, createdAt: -1 }),
+        dbInstance.collection('messages').createIndex({ senderId: 1, receiverId: 1, createdAt: 1 }),
+        dbInstance.collection('users').createIndex({ email: 1 }, { unique: true, sparse: true })
+      ]);
+      console.log('MongoDB production indexes successfully established.');
+    } catch (idxErr) {
+      console.warn('Index initialization note:', idxErr.message);
     }
   }
 
@@ -65,10 +85,50 @@ class MongoDBDatabase {
     return await dbInstance.collection(name).find({}).toArray();
   }
 
-  async find(collectionName, query = {}) {
+  async find(collectionName, query = {}, options = {}) {
     await this.initPromise;
     const dbInstance = await connectDB();
-    return await dbInstance.collection(collectionName).find(query).toArray();
+    let cursor = dbInstance.collection(collectionName).find(query);
+    if (options.projection) cursor = cursor.project(options.projection);
+    if (options.sort) cursor = cursor.sort(options.sort);
+    if (options.limit) cursor = cursor.limit(options.limit);
+    if (options.skip) cursor = cursor.skip(options.skip);
+    return await cursor.toArray();
+  }
+
+  // Optimized Server-Side Pagination & Selective Projection
+  async findPaged(collectionName, query = {}, { page = 1, limit = 20, sort = { createdAt: -1 }, projection = null } = {}) {
+    await this.initPromise;
+    const dbInstance = await connectDB();
+    const col = dbInstance.collection(collectionName);
+    
+    const parsedPage = Math.max(1, parseInt(page, 10) || 1);
+    const parsedLimit = Math.min(100, Math.max(1, parseInt(limit, 10) || 20));
+    const skip = (parsedPage - 1) * parsedLimit;
+
+    let cursor = col.find(query);
+    if (projection) cursor = cursor.project(projection);
+    if (sort) cursor = cursor.sort(sort);
+
+    const [docs, total] = await Promise.all([
+      cursor.skip(skip).limit(parsedLimit).toArray(),
+      col.countDocuments(query)
+    ]);
+
+    return {
+      docs,
+      total,
+      page: parsedPage,
+      limit: parsedLimit,
+      totalPages: Math.ceil(total / parsedLimit) || 1
+    };
+  }
+
+  async updateMany(collectionName, query = {}, updates = {}) {
+    await this.initPromise;
+    const dbInstance = await connectDB();
+    const result = await dbInstance.collection(collectionName).updateMany(query, { $set: updates });
+    return result.modifiedCount;
   }
 
   async findOne(collectionName, query = {}) {

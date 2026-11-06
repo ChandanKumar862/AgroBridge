@@ -35,49 +35,50 @@ const sendMessage = async (req, res) => {
   }
 };
 
-// @desc    Get message logs between two users
+// @desc    Get message logs between two users with indexed query and atomic read update
 // @route   GET /api/messages/thread/:userId
 // @access  Private
 const getConversation = async (req, res) => {
   try {
     const otherUserId = req.params.userId;
-    const messages = await db.getCollection('messages');
+    const query = {
+      $or: [
+        { senderId: req.user.id, receiverId: otherUserId },
+        { senderId: otherUserId, receiverId: req.user.id }
+      ]
+    };
 
-    // Filter message logs in this thread
-    const thread = messages.filter(m => 
-      (m.senderId === req.user.id && m.receiverId === otherUserId) ||
-      (m.senderId === otherUserId && m.receiverId === req.user.id)
-    );
+    const thread = await db.find('messages', query, {
+      sort: { createdAt: 1 }
+    });
 
-    // Mark received messages as read
-    for (const m of thread) {
-      if (m.receiverId === req.user.id && !m.read) {
-        await db.updateOne('messages', { id: m.id }, { read: true });
-      }
-    }
-
-    // Sort by chronological order
-    thread.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+    // Atomic batch update for all unread messages in thread (eliminates N+1 DB calls)
+    await db.updateMany('messages', {
+      senderId: otherUserId,
+      receiverId: req.user.id,
+      read: false
+    }, { read: true });
 
     res.status(200).json({
       success: true,
       data: thread
     });
   } catch (error) {
+    console.error('Error loading thread:', error);
     res.status(500).json({ success: false, message: 'Server error loading thread' });
   }
 };
 
-// @desc    Get recent chat participants
+// @desc    Get recent chat participants with user-scoped DB query
 // @route   GET /api/messages/chats
 // @access  Private
 const getChatsList = async (req, res) => {
   try {
-    const messages = await db.getCollection('messages');
     const myId = req.user.id;
-
-    // Filter messages involving current user
-    const myMessages = messages.filter(m => m.senderId === myId || m.receiverId === myId);
+    // User-scoped query leveraging compound index
+    const myMessages = await db.find('messages', {
+      $or: [{ senderId: myId }, { receiverId: myId }]
+    }, { sort: { createdAt: -1 } });
 
     // Extract unique active chats
     const chatsMap = new Map();

@@ -1,31 +1,35 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 // Layout components
 import Navbar from './components/Navbar';
 
-// Public pages
-import Home from './pages/Home';
-import About from './pages/About';
-import Impact from './pages/Impact';
-import Marketplace from './pages/Marketplace';
+// Route-level Code Splitting (Lazy Loading)
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Impact = lazy(() => import('./pages/Impact'));
+const Marketplace = lazy(() => import('./pages/Marketplace'));
+const Login = lazy(() => import('./pages/Login'));
+const Signup = lazy(() => import('./pages/Signup'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const UploadProduce = lazy(() => import('./pages/UploadProduce'));
+const Messages = lazy(() => import('./pages/Messages'));
+const FarmerListings = lazy(() => import('./pages/FarmerListings'));
+const FarmerDashboard = lazy(() => import('./pages/Dashboards/FarmerDashboard'));
+const BuyerDashboard = lazy(() => import('./pages/Dashboards/BuyerDashboard'));
+const SecondaryDashboard = lazy(() => import('./pages/Dashboards/SecondaryDashboard'));
+const AdminDashboard = lazy(() => import('./pages/Dashboards/AdminDashboard'));
 
-// Auth pages
-import Login from './pages/Login';
-import Signup from './pages/Signup';
-import ForgotPassword from './pages/ForgotPassword';
-
-// Workspace pages
-import UploadProduce from './pages/UploadProduce';
-import Messages from './pages/Messages';
-import FarmerListings from './pages/FarmerListings';
-
-// Dashboards
-import FarmerDashboard from './pages/Dashboards/FarmerDashboard';
-import BuyerDashboard from './pages/Dashboards/BuyerDashboard';
-import SecondaryDashboard from './pages/Dashboards/SecondaryDashboard';
-import AdminDashboard from './pages/Dashboards/AdminDashboard';
+// Accessible Page Loading Fallback
+const PageLoadingFallback = () => (
+  <div className="flex-grow flex items-center justify-center py-24 bg-brand-cream/10">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 border-4 border-brand-emerald border-t-transparent rounded-full animate-spin" />
+      <span className="text-xs font-semibold text-brand-forest/60">Loading view...</span>
+    </div>
+  </div>
+);
 
 // Secure Route Guardian
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -61,89 +65,91 @@ function App() {
           
           {/* Main Routing Terminal */}
           <main className="flex-grow flex flex-col">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/impact" element={<Impact />} />
-              <Route path="/marketplace" element={<Marketplace />} />
+            <Suspense fallback={<PageLoadingFallback />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/impact" element={<Impact />} />
+                <Route path="/marketplace" element={<Marketplace />} />
 
-              {/* Authentication Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
+                {/* Authentication Routes */}
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
 
-              {/* Secure Operational Workspace Routes */}
-              <Route 
-                path="/upload" 
-                element={
-                  <ProtectedRoute allowedRoles={['farmer']}>
-                    <UploadProduce />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/farmer-listings" 
-                element={
-                  <ProtectedRoute allowedRoles={['farmer']}>
-                    <FarmerListings />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/messages" 
-                element={
-                  <ProtectedRoute>
-                    <Messages />
-                  </ProtectedRoute>
-                } 
-              />
+                {/* Secure Operational Workspace Routes */}
+                <Route 
+                  path="/upload" 
+                  element={
+                    <ProtectedRoute allowedRoles={['farmer']}>
+                      <UploadProduce />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/farmer-listings" 
+                  element={
+                    <ProtectedRoute allowedRoles={['farmer']}>
+                      <FarmerListings />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/messages" 
+                  element={
+                    <ProtectedRoute>
+                      <Messages />
+                    </ProtectedRoute>
+                  } 
+                />
 
-              {/* Secure Dashboards */}
-              <Route 
-                path="/dashboard/farmer" 
-                element={
-                  <ProtectedRoute allowedRoles={['farmer']}>
-                    <FarmerDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/buyer" 
-                element={
-                  <ProtectedRoute allowedRoles={['buyer']}>
-                    <BuyerDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/animal-care" 
-                element={
-                  <ProtectedRoute allowedRoles={['animal_care']}>
-                    <SecondaryDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/compost" 
-                element={
-                  <ProtectedRoute allowedRoles={['compost']}>
-                    <SecondaryDashboard />
-                  </ProtectedRoute>
-                } 
-              />
-              <Route 
-                path="/dashboard/admin" 
-                element={
-                  <ProtectedRoute allowedRoles={['admin']}>
-                    <AdminDashboard />
-                  </ProtectedRoute>
-                } 
-              />
+                {/* Secure Dashboards */}
+                <Route 
+                  path="/dashboard/farmer" 
+                  element={
+                    <ProtectedRoute allowedRoles={['farmer']}>
+                      <FarmerDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard/buyer" 
+                  element={
+                    <ProtectedRoute allowedRoles={['buyer']}>
+                      <BuyerDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard/animal-care" 
+                  element={
+                    <ProtectedRoute allowedRoles={['animal_care']}>
+                      <SecondaryDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard/compost" 
+                  element={
+                    <ProtectedRoute allowedRoles={['compost']}>
+                      <SecondaryDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
+                <Route 
+                  path="/dashboard/admin" 
+                  element={
+                    <ProtectedRoute allowedRoles={['admin']}>
+                      <AdminDashboard />
+                    </ProtectedRoute>
+                  } 
+                />
 
-              {/* 404 Catch Redirect */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
+                {/* 404 Catch Redirect */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
           </main>
 
           {/* Minimalist Eco Footer */}
